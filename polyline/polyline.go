@@ -4,6 +4,7 @@ package polyline
 
 import (
 	"fmt"
+	"math"
 	"strings"
 )
 
@@ -70,13 +71,18 @@ func DecodeInts(s string) ([]int, error) {
 //     []float64{lat1, lng1, lat2, lng2...}
 // The dimension dim should normally be 2.
 func Decode(s string, dim int) ([]float64, error) {
+	return DecodePrecision(s, dim, 5)
+}
+
+func DecodePrecision(s string, dim, precision int) ([]float64, error) {
+	multiplier := math.Pow10(precision)
 	xs, err := DecodeInts(s)
 	if err != nil {
 		return nil, err
 	}
 	ys := make([]float64, len(xs))
 	for j, i := range xs {
-		ys[j] = float64(i) / 1e5
+		ys[j] = float64(i) / multiplier
 		if j >= dim {
 			ys[j] += ys[j-dim]
 		}
@@ -126,10 +132,15 @@ func EncodeInts(xs []int) string {
 //     []float64{lat1, lng1, lat2, lng2...}
 // The dimension dim should normally be 2.
 func Encode(xs []float64, dim int) string {
+	return EncodePrecision(xs, dim, 5)
+}
+
+func EncodePrecision(xs []float64, dim, precision int) string {
+	multiplier := math.Pow10(precision)
 	n := len(xs)
 	ys := make([]int, n)
 	for i := 0; i < n; i++ {
-		ys[i] = int(1e5 * xs[i])
+		ys[i] = int(multiplier * xs[i])
 	}
 	for i := n - 1; i >= dim; i-- {
 		ys[i] -= ys[i-dim]
